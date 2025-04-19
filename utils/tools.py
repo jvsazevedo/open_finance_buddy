@@ -7,7 +7,7 @@ import os
 # Add the parent directory to the path
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-from utils.database import get_user_monthly_income, get_user_monthly_expenses, get__expenses_by_month, add_user_expense
+from utils.expenses_db_sqlite import get_user_monthly_income, get_user_monthly_expenses, get_expenses_by_month, add_user_expense
 
 @tool
 def search_user_monthly_income(user_id: str) -> Dict[str, Any]:
@@ -42,7 +42,7 @@ def search_expense_by_month(user_id: str, month: int) -> Dict[str, Any]:
     - user_id: The user id
     - month: The month to filter the income by (1-12)
     """
-    expenses = get__expenses_by_month(user_id, month)
+    expenses = get_expenses_by_month(user_id, month)
     return expenses
 
 @tool
@@ -58,6 +58,18 @@ def add_user_expense_in_month(user_id: str, month: int, expense: Dict[str, Any])
     # Implement the logic to add the expense to the database
     add_user_expense(user_id, month, expense)
     return {"status": "success", "message": "Expense added successfully"}
+
+@tool
+def add_chat_message(user_id: str, message: str) -> Dict[str, Any]:
+    """
+    Add a chat message to the user's conversation history
+    Use this tool to add a chat message to the user's conversation history
+    Params:
+    - user_id: The user id
+    - message: The message to add
+    """
+    # Implement the logic to add the message to the database or conversation history
+    pass
 
 tools = [
     search_user_monthly_income,

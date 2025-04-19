@@ -45,12 +45,12 @@ You are an advanced AI financial assistant designed to help users understand the
 
 Here's the user's name, if provided:
 <user_name>
-{{user_name}}
+{{messages}}
 </user_name>
 
 The messages history is:
 <messages_history>
-{{messages_history}}
+{{messages}}
 </messages_history>
 
 Follow these guidelines to provide the best possible assistance:
@@ -105,18 +105,18 @@ Then, provide your answer in a clear, concise manner appropriate for a financial
 Remember to always prioritize accuracy, clarity, and helpfulness in your responses.
 """)
 
-# llm = ChatOpenAI(
-#     model='gpt-4.1-mini', 
-#     temperature=0.3,
-#     timeout=None,
-#     max_retries=3,
-#     api_key=openai_api_key,  
-# )
-
-llm = ChatOllama(
-    model="qwen2.5:14b",
-    temperature=0.3,
+llm = ChatOpenAI(
+   model='gpt-4.1-mini', 
+   temperature=0.3,
+   timeout=None,
+   max_retries=3,
+   api_key=openai_api_key,  
 )
+
+# llm = ChatOllama(
+#     model="qwen2.5:14b",
+#     temperature=0.3,
+# )
 
 def agent_node(state: State):
     """Agent node in the workflow graph."""
