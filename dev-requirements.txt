@@ -1,0 +1,9 @@
+flake8
+flake8-docstrings
+flake8-bugbear
+flake8-comprehensions
+flake8-return
+flake8-isort
+flake8-quotes
+flake8-builtins
+flake8-variables-names

@@ -32,7 +32,7 @@ def create_user_table():
     ''')
     conn.commit()
 
-def create_user_parans_table():
+def create_user_params_table():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS user_params (
         id INTEGER PRIMARY KEY,
