@@ -158,3 +158,25 @@ def add_user(user: Dict[str, Any]) -> int:
     )
     conn.commit()
     return cursor.lastrowid
+
+def add_user_param(user_id: int, param: Dict[str, Any]) -> int:
+    """
+    Add a user parameter to the database.
+    
+    Args:
+        user_id (int): The ID of the user.
+        param (Dict[str, Any]): The parameter to add.
+
+    Returns:
+        the ID of the parameter.
+    """
+    cursor.execute(
+        "INSERT INTO user_params (user_id, label, value) VALUES (?, ?, ?)", 
+        (
+            user_id, 
+            param["label"], 
+            param["value"]
+        )
+    )
+    conn.commit()
+    return cursor.lastrowid

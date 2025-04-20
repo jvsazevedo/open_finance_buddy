@@ -7,7 +7,7 @@ print("Adding to sys.path:", absolute_path)
 
 sys.path.append(absolute_path)
 
-from src.utils  import create_expenses_table, create_user_table, create_user_params_table, add_user
+from src.utils  import create_expenses_table, create_user_table, create_user_params_table, add_user, add_user_param, get_user_monthly_income
 
 def test_create_expenses_table():
     print("Initializing test expense table creation...")
@@ -53,16 +53,31 @@ def test_add_user():
         "password": "test_password"
     })
 
-    print("User ID:", user_id)
-    print("User id type:", type(user_id))
+    import sqlite3
+    conn = sqlite3.connect("expenses.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM user WHERE id = (?)", (user_id,))
+    result = cursor.fetchone()
+    assert result is not None, "user data was not inserted successfully."
+    print("test user created successfully.", result)
+
+def test_add_user_param():
+    print("Adding user param to test database...")
+    user_param_id = add_user_param(
+        1,  # Assuming user_id 1 exists
+        {
+            "label": "monthly_income",
+            "value": "7500.00"
+        }
+    )
 
     import sqlite3
     conn = sqlite3.connect("expenses.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM user WHERE id = ?", (user_id))
-    result = cursor.fetchone()
-    assert result is not None, "user table was not created successfully."
-    print("test user created successfully.", result)
+    cursor.execute("SELECT * FROM user_params WHERE id = (?)", [1])
+    result = cursor.fetchall()
+    assert result is not None, "user_params data was not inserted successfully."
+    print("test user param created successfully.", result)
 
 test_create_expenses_table()
 test_create_users_table()
@@ -70,5 +85,5 @@ test_create_user_params_table()
 print("All DDL tests passed successfully.")
 
 test_add_user()
+test_add_user_param()
 print("All DML tests passed successfully.")
-
