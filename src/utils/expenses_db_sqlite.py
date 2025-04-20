@@ -44,7 +44,7 @@ def create_user_params_table():
     """)
     conn.commit()
 
-def get_user_monthly_income(user_id):
+def get_user_monthly_income(user_id) -> float | None:
     """
     Fetch the monthly income of a user from the database.
     
@@ -58,12 +58,14 @@ def get_user_monthly_income(user_id):
         """
         SELECT value FROM user_params
         WHERE user_id = ? AND label = 'monthly_income'
+        ORDER BY id DESC
+        LIMIT 1
         """,
         [user_id]
     )
-    result = cursor.fetchall()
+    result = cursor.fetchone()
 
-    return result
+    return float(result[0]) if result else None
 
 def get_user_monthly_expenses(user_id):
     """
