@@ -79,12 +79,12 @@ def get_user_monthly_expenses(user_id):
     """
     cursor.execute(
         """
-        SELECT value FROM expenses
+        SELECT * FROM expenses
         WHERE user_id = ?
         ORDER BY expiring_date DESC
         LIMIT 50
         """,
-        (user_id)
+        (user_id,)
     )
     result = cursor.fetchall()
 
@@ -103,7 +103,7 @@ def get_expenses_by_month(user_id: str, month: int):
     """
     cursor.execute(
         """
-        SELECT value FROM expenses
+        SELECT * FROM expenses
         WHERE user_id = ? AND strftime('%m', expiring_date) = ?
         ORDER BY expiring_date DESC
         LIMIT 50
@@ -139,6 +139,7 @@ def add_user_expense(user_id: str, expense: Dict[str, Any]):
         )
     )
     conn.commit()
+    return cursor.lastrowid
 
 def add_user(user: Dict[str, Any]) -> int:
     """
