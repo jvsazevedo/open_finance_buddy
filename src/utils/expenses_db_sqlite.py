@@ -59,7 +59,7 @@ def get_user_monthly_income(user_id):
         SELECT value FROM user_params
         WHERE user_id = ? AND label = 'monthly_income'
         """,
-        (user_id)
+        [user_id]
     )
     result = cursor.fetchall()
 
