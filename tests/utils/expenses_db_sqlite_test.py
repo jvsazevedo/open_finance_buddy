@@ -79,6 +79,13 @@ def test_add_user_param():
     assert result is not None, "user_params data was not inserted successfully."
     print("test user param created successfully.", result)
 
+def test_get_user_monthly_income():
+    print("Getting user monthly income...")
+
+    result = get_user_monthly_income(1)  # Assuming user_id 1 exists
+    assert result is not None, "user monthly income was not retrieved successfully."
+    print("User monthly income retrieved successfully.", result)
+
 test_create_expenses_table()
 test_create_users_table()
 test_create_user_params_table()
@@ -87,3 +94,6 @@ print("All DDL tests passed successfully.")
 test_add_user()
 test_add_user_param()
 print("All DML tests passed successfully.")
+
+test_get_user_monthly_income()
+print("All DQL tests passed successfully.")
