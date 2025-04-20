@@ -4,7 +4,7 @@ conn = sqlite3.connect("expenses.db")
 cursor = conn.cursor()
 
 def create_expenses_table():
-    cursor.execute('''
+    cursor.execute("""
     CREATE TABLE IF NOT EXISTS expenses (
         id INTEGER PRIMARY KEY,
         user_id TEXT,
@@ -14,32 +14,34 @@ def create_expenses_table():
         recurrent INTEGER,
         installments INTEGER,
         expiring_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-    ''')
+    """)
     conn.commit()
 
 def create_user_table():
-    cursor.execute('''
+    cursor.execute("""
     CREATE TABLE IF NOT EXISTS user (
         id INTEGER PRIMARY KEY,
         name TEXT,
         email TEXT,
         password TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ''')
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP DEFAULT NULL
+    )
+    """)
     conn.commit()
 
 def create_user_params_table():
-    cursor.execute('''
+    cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_params (
         id INTEGER PRIMARY KEY,
         user_id INTEGER,
         label TEXT,
-        value TEXT,
-    ''')
+        value TEXT
+    )
+    """)
     conn.commit()
 
 def get_user_monthly_income(user_id):
@@ -135,3 +137,24 @@ def add_user_expense(user_id: str, expense: Dict[str, Any]):
         )
     )
     conn.commit()
+
+def add_user(user: Dict[str, Any]) -> int:
+    """
+    Add a user to the database.
+    
+    Args:
+        user (Dict[str, Any]): The user to add.
+
+    Returns:
+        the ID of the user.
+    """
+    cursor.execute(
+        "INSERT INTO user (name, email, password) VALUES (?, ?, ?)", 
+        (
+            user["name"], 
+            user["email"], 
+            user["password"]
+        )
+    )
+    conn.commit()
+    return cursor.lastrowid
