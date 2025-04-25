@@ -1,19 +1,14 @@
 [flake8]
-# Mostrar detalhes de cada regra quebrada
 show-source = True
 statistics = True
 
-# Configuração de importação
-application-import-names = seu_pacote,tests
+application-import-names = src,tests
 import-order-style = google
 
-# Comprimento máximo de linha
-max-line-length = 88  # Compatível com Black
+max-line-length = 100
 
-# Complexidade máxima de McCabe
 max-complexity = 10
 
-# Diretórios e arquivos para ignorar
 exclude =
     .git,
     __pycache__,
@@ -28,28 +23,19 @@ exclude =
     env,
     migrations
 
-# Erros e avisos a ignorar
 ignore =
-    # E203: espaço antes de `:` (incompatível com Black)
     E203,
-    # W503: quebra de linha antes de operador binário (incompatível com Black)
     W503,
-    # E501: linha muito longa (já tratado por max-line-length)
+    E402,
     E501,
-    # D100-D104: docstrings em módulos/pacotes (opcional, remova se quiser exigir)
     D100,D101,D102,D103,D104
 
-# Exigir docstrings para funções públicas, classes e métodos
 docstring-convention = google
 
-# Aspas consistentes
 inline-quotes = single
 multiline-quotes = double
 docstring-quotes = double
 
-# Relatório mínimo
 select = B,C,E,F,W,T4,B9
 
-# Nível de erro que causará falha do CI
-# aumentar para permitir mais problemas antes de falhar
 max-error-rate = 0.0

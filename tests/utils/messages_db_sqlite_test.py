@@ -1,14 +1,11 @@
 import os
 import sys
 from dotenv import load_dotenv
+load_dotenv()
 
-# Add the parent directory to the system path
 absolute_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 print("Adding to sys.path:", absolute_path)
 sys.path.append(absolute_path)
-
-load_dotenv()
-
 from src.utils import (
     create_conversations_table,
     add_message_with_embedding,
@@ -17,6 +14,7 @@ from src.utils import (
     find_recent_similar_messages_by_date,
     find_similar_messages_by_topic
 )
+
 
 def test_create_conversations_table():
     print("Initializing test conversations table creation...")
@@ -29,6 +27,7 @@ def test_create_conversations_table():
     result = cursor.fetchone()
     assert result is not None, "conversations table was not created successfully."
     print("conversations table created successfully.", result)
+
 
 def test_add_message_with_embedding():
     print("Initializing test add_message_with_embedding...")
@@ -47,6 +46,7 @@ def test_add_message_with_embedding():
     result = cursor.fetchone()
     print("test user conversation created successfully.", result)
 
+
 def test_get_recent_conversations():
     print("Initializing test get_recent_conversations...")
     conversations = get_recent_conversations(user_id=1, limit=5)
@@ -54,28 +54,31 @@ def test_get_recent_conversations():
     assert len(conversations) > 0, "No recent conversations found."
     print("Recent conversations retrieved successfully.", conversations)
 
+
 def test_find_similar_messages_for_user():
     print("Initializing test find_similar_messages_for_user...")
     conversations = find_similar_messages_for_user(
         query="Test message content",
-        user_id=1, 
+        user_id=1,
         limit=5
     )
 
     assert len(conversations) > 0, "No recent conversations found."
     print("Recent conversations retrieved successfully.", conversations)
 
+
 def test_find_recent_similar_messages_by_date():
     print("Initializing test find_recent_similar_messages_by_date...")
     conversations = find_recent_similar_messages_by_date(
         query="Test message content",
-        user_id=1, 
+        user_id=1,
         limit=5,
         time_limit_days=7
     )
 
     assert len(conversations) > 0, "No recent conversations found."
     print("Recent conversations retrieved successfully.", conversations)
+
 
 def test_find_similar_messages_by_topic():
     print("Initializing test find_similar_messages_by_topic...")
@@ -89,7 +92,7 @@ def test_find_similar_messages_by_topic():
     conversations = find_similar_messages_by_topic(
         query="Test content",
         topic_keywords=["Summary"],
-        user_id=2, 
+        user_id=2,
         limit=5
     )
 

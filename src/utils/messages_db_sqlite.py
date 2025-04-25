@@ -4,11 +4,9 @@ from langchain_community.vectorstores import SQLiteVSS
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 
-# Create and configure SQLite connection with proper row factory
 sqlite_db = sqlite3.connect("messages_history.db")
 cursor = sqlite_db.cursor()
 
-# Create a separate connection for SQLiteVSS with row factory
 vss_connection = sqlite3.connect("messages_history_vec.db")
 vss_connection.enable_load_extension(True)
 vss_connection.row_factory = sqlite3.Row
@@ -21,6 +19,7 @@ vectorstore = SQLiteVSS(
     embedding=embeddings,
     db_file="messages_history_vec.db",
 )
+
 
 def create_conversations_table():
     cursor.execute('''
@@ -35,9 +34,12 @@ def create_conversations_table():
     ''')
     sqlite_db.commit()
 
+
 def add_message_with_embedding(user_id: int, role: str, content: str, topic_summary: str):
     cursor.execute(
-        "INSERT INTO conversations (user_id, role, content, topic_summary) VALUES (?, ?, ?, ?)", 
+        """
+        INSERT INTO conversations (user_id, role, content, topic_summary) VALUES (?, ?, ?, ?)
+        """,
         (user_id, role, content, topic_summary)  # Fixed: removed the extra list brackets
     )
     message_id = cursor.lastrowid
@@ -51,53 +53,56 @@ def add_message_with_embedding(user_id: int, role: str, content: str, topic_summ
     documents = [document]
     # Remove the ids parameter and let SQLiteVSS handle the IDs
     ids = vectorstore.add_documents(documents)
-    
+
     return ids
+
 
 def get_recent_conversations(user_id, limit=10):
     """
-    Recupera as conversas mais recentes de um usuário específico, 
+    Recupera as conversas mais recentes de um usuário específico,
     ordenadas por message_id decrescente.
-    
+
     Args:
         user_id: ID do usuário
         limit: Número máximo de conversas a retornar (padrão: 10)
-    
+
     Returns:
         Lista de tuplas representando as conversas
     """
     cursor.execute(
         """
-        SELECT * FROM conversations 
-        WHERE user_id = ? 
-        ORDER BY id DESC 
+        SELECT * FROM conversations
+        WHERE user_id = ?
+        ORDER BY id DESC
         LIMIT ?
         """,
         (user_id, limit)
     )
     return cursor.fetchall()
 
+
 def find_similar_messages_for_user(query, user_id, limit=5):
     """
     Busca mensagens similares à query, filtrando apenas para um usuário específico.
-    
+
     Args:
         query: Texto para busca de similaridade
         user_id: ID do usuário para filtrar os resultados
         limit: Número máximo de resultados (padrão: 5)
-    
+
     Returns:
         Lista de tuplas representando as conversas similares do usuário
     """
     results = vectorstore.similarity_search(
-        query, 
+        query,
         k=limit,
         filter={"user_id": user_id}  # Filtrar por user_id
     )
-    
+
     # Get message_ids from metadata
-    message_ids = [doc.metadata.get("message_id") for doc in results if "message_id" in doc.metadata]
-    
+    message_ids = [doc.metadata.get("message_id")
+                   for doc in results if "message_id" in doc.metadata]
+
     if message_ids:
         placeholders = ','.join(['?'] * len(message_ids))
         cursor.execute(
@@ -107,16 +112,17 @@ def find_similar_messages_for_user(query, user_id, limit=5):
         return cursor.fetchall()
     return []
 
+
 def find_recent_similar_messages_by_date(query, user_id, limit=5, time_limit_days=7):
     """
     Busca mensagens similares à query entre as conversas recentes de um usuário.
-    
+
     Args:
         query: Texto para busca de similaridade
         user_id: ID do usuário para filtrar os resultados
         limit: Número máximo de resultados (padrão: 5)
         time_limit_days: Número de dias atrás para considerar (padrão: 7)
-    
+
     Returns:
         Lista de tuplas representando as conversas similares recentes do usuário
     """
@@ -124,20 +130,21 @@ def find_recent_similar_messages_by_date(query, user_id, limit=5, time_limit_day
     import datetime
     date_limit = datetime.datetime.now() - datetime.timedelta(days=time_limit_days)
     date_limit_str = date_limit.strftime('%Y-%m-%d %H:%M:%S')
-    
+
     results = vectorstore.similarity_search(
-        query, 
-        k=limit*2,  # Buscar mais resultados para depois filtrar por data
+        query,
+        k=limit * 2,
         filter={"user_id": user_id}
     )
-    
-    message_ids = [doc.metadata.get("message_id") for doc in results if "message_id" in doc.metadata]
-    
+
+    message_ids = [doc.metadata.get("message_id")
+                   for doc in results if "message_id" in doc.metadata]
+
     if message_ids:
         placeholders = ','.join(['?'] * len(message_ids))
         cursor.execute(
             f"""
-            SELECT * FROM conversations 
+            SELECT * FROM conversations
             WHERE id IN ({placeholders})
             AND user_id = ?
             AND created_at > ?
@@ -149,16 +156,22 @@ def find_recent_similar_messages_by_date(query, user_id, limit=5, time_limit_day
         return cursor.fetchall()
     return []
 
-def find_similar_messages_by_topic(query: str, topic_keywords: list[str], user_id: str = None, limit: int =5):
+
+def find_similar_messages_by_topic(
+    query: str,
+    topic_keywords: list[str],
+    user_id: str = None,
+    limit: int = 5
+):
     """
-    Busca mensagens similares à query que contenham determinadas palavras-chave no resumo do tópico.
-    
+    Busca mensagens similares à query que contenham palavras-chave no resumo do tópico.
+
     Args:
         query: Texto para busca de similaridade
         topic_keywords: Lista de palavras-chave para filtrar por tópico
         user_id: ID do usuário para filtrar os resultados (opcional)
         limit: Número máximo de resultados (padrão: 5)
-    
+
     Returns:
         Lista de tuplas representando as conversas similares por tópico
     """
@@ -166,24 +179,25 @@ def find_similar_messages_by_topic(query: str, topic_keywords: list[str], user_i
     metadata_filter = {}
     if user_id:
         metadata_filter["user_id"] = user_id
-    
+
     results = vectorstore.similarity_search(
-        query, 
-        k=limit*3,  # Buscar mais resultados para depois filtrar por tópico
+        query,
+        k=limit * 3,
         filter=metadata_filter if metadata_filter else None
     )
-    
+
     filtered_results = []
     for doc in results:
         topic_summary = doc.metadata.get("topic_summary", "").lower()
         if any(keyword.lower() in topic_summary for keyword in topic_keywords):
             filtered_results.append(doc)
-        
+
         if len(filtered_results) >= limit:
             break
-    
-    message_ids = [doc.metadata.get("message_id") for doc in filtered_results[:limit] if "message_id" in doc.metadata]
-    
+
+    message_ids = [doc.metadata.get("message_id")
+                   for doc in filtered_results[:limit] if "message_id" in doc.metadata]
+
     if message_ids:
         placeholders = ','.join(['?'] * len(message_ids))
         cursor.execute(
@@ -192,8 +206,8 @@ def find_similar_messages_by_topic(query: str, topic_keywords: list[str], user_i
         )
         return cursor.fetchall()
     return []
-    
+
+
 def close_connections():
-    """Close all database connections properly"""
     sqlite_db.close()
     vss_connection.close()

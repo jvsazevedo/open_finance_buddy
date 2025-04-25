@@ -3,6 +3,7 @@ import sqlite3
 conn = sqlite3.connect("expenses.db")
 cursor = conn.cursor()
 
+
 def create_expenses_table():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS expenses (
@@ -19,6 +20,7 @@ def create_expenses_table():
     """)
     conn.commit()
 
+
 def create_user_table():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user (
@@ -33,6 +35,7 @@ def create_user_table():
     """)
     conn.commit()
 
+
 def create_user_params_table():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_params (
@@ -44,10 +47,11 @@ def create_user_params_table():
     """)
     conn.commit()
 
+
 def get_user_monthly_income(user_id) -> float | None:
     """
     Fetch the monthly income of a user from the database.
-    
+
     Args:
         user_id (int): The ID of the user.
 
@@ -67,10 +71,11 @@ def get_user_monthly_income(user_id) -> float | None:
 
     return float(result[0]) if result else None
 
+
 def get_user_monthly_expenses(user_id):
     """
     Fetch the monthly expenses of a user from the database.
-    
+
     Args:
         user_id (int): The ID of the user.
 
@@ -90,10 +95,11 @@ def get_user_monthly_expenses(user_id):
 
     return result
 
+
 def get_expenses_by_month(user_id: str, month: int):
     """
     Fetch the expenses of a user for a specific month from the database.
-    
+
     Args:
         user_id (str): The ID of the user.
         month (int): The month for which to fetch expenses.
@@ -114,10 +120,11 @@ def get_expenses_by_month(user_id: str, month: int):
 
     return result
 
+
 def add_user_expense(user_id: str, expense: Dict[str, Any]):
     """
     Add an expense for a user for a specific month to the database.
-    
+
     Args:
         user_id (str): The ID of the user.
         month (int): The month for which to add the expense.
@@ -127,24 +134,36 @@ def add_user_expense(user_id: str, expense: Dict[str, Any]):
         None
     """
     cursor.execute(
-        "INSERT INTO expenses (user_id, label, value, currency, recurrent, installments, expiring_date) VALUES (?, ?, ?, ?, ?, ?, ?)", 
+        """
+        INSERT INTO expenses (
+            user_id,
+            label,
+            value,
+            currency,
+            recurrent,
+            installments,
+            expiring_date
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
         (
-            user_id, 
-            expense["label"], 
-            expense["value"], 
-            expense["currency"], 
-            expense["recurrent"], 
-            expense["installments"], 
+            user_id,
+            expense["label"],
+            expense["value"],
+            expense["currency"],
+            expense["recurrent"],
+            expense["installments"],
             expense["expiring_date"] if "expiring_date" in expense else None
         )
     )
     conn.commit()
     return cursor.lastrowid
 
+
 def add_user(user: Dict[str, Any]) -> int:
     """
     Add a user to the database.
-    
+
     Args:
         user (Dict[str, Any]): The user to add.
 
@@ -152,20 +171,21 @@ def add_user(user: Dict[str, Any]) -> int:
         the ID of the user.
     """
     cursor.execute(
-        "INSERT INTO user (name, email, password) VALUES (?, ?, ?)", 
+        "INSERT INTO user (name, email, password) VALUES (?, ?, ?)",
         (
-            user["name"], 
-            user["email"], 
+            user["name"],
+            user["email"],
             user["password"]
         )
     )
     conn.commit()
     return cursor.lastrowid
 
+
 def add_user_param(user_id: int, param: Dict[str, Any]) -> int:
     """
     Add a user parameter to the database.
-    
+
     Args:
         user_id (int): The ID of the user.
         param (Dict[str, Any]): The parameter to add.
@@ -174,10 +194,10 @@ def add_user_param(user_id: int, param: Dict[str, Any]) -> int:
         the ID of the parameter.
     """
     cursor.execute(
-        "INSERT INTO user_params (user_id, label, value) VALUES (?, ?, ?)", 
+        "INSERT INTO user_params (user_id, label, value) VALUES (?, ?, ?)",
         (
-            user_id, 
-            param["label"], 
+            user_id,
+            param["label"],
             param["value"]
         )
     )

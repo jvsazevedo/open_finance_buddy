@@ -7,7 +7,18 @@ print("Adding to sys.path:", absolute_path)
 
 sys.path.append(absolute_path)
 
-from src.utils  import create_expenses_table, create_user_table, create_user_params_table, add_user, add_user_param, add_user_expense, get_user_monthly_income, get_user_monthly_expenses, get_expenses_by_month
+from src.utils import (
+    create_expenses_table,
+    create_user_table,
+    create_user_params_table,
+    add_user,
+    add_user_param,
+    add_user_expense,
+    get_user_monthly_income,
+    get_user_monthly_expenses,
+    get_expenses_by_month
+)
+
 
 def test_create_expenses_table():
     print("Initializing test expense table creation...")
@@ -21,6 +32,7 @@ def test_create_expenses_table():
     assert result is not None, "expenses table was not created successfully."
     print("expenses table created successfully.", result)
 
+
 def test_create_users_table():
     print("Initializing test users table creation...")
     create_user_table()
@@ -33,6 +45,7 @@ def test_create_users_table():
     assert result is not None, "user table was not created successfully."
     print("user table created successfully.", result)
 
+
 def test_create_user_params_table():
     print("Initializing test user params table creation...")
     create_user_params_table()
@@ -44,6 +57,7 @@ def test_create_user_params_table():
     result = cursor.fetchone()
     assert result is not None, "user_params table was not created successfully."
     print("user_params table created successfully.", result)
+
 
 def test_add_user():
     print("Adding user to test database...")
@@ -61,9 +75,10 @@ def test_add_user():
     assert result is not None, "user data was not inserted successfully."
     print("test user created successfully.", result)
 
+
 def test_add_user_param():
     print("Adding user param to test database...")
-    user_param_id = add_user_param(
+    add_user_param(
         1,  # Assuming user_id 1 exists
         {
             "label": "monthly_income",
@@ -79,11 +94,12 @@ def test_add_user_param():
     assert result is not None, "user_params data was not inserted successfully."
     print("test user param created successfully.", result)
 
+
 def test_add_user_expense():
     print("Adding user expense to test database...")
     user_expense = add_user_expense(
         user_id=1,  # Assuming user_id 1 exists
-        expense= {
+        expense={
             "label": "Aluguel",
             "value": 650.00,
             "currency": "BRL",
@@ -101,12 +117,14 @@ def test_add_user_expense():
     assert result is not None, "user_params data was not inserted successfully."
     print("test user param created successfully.", result)
 
+
 def test_get_user_monthly_income():
     print("Getting user monthly income...")
 
     result = get_user_monthly_income(1)  # Assuming user_id 1 exists
     assert result is not None, "user monthly income was not retrieved successfully."
     print("User monthly income retrieved successfully.", result)
+
 
 def test_get_user_monthly_expenses():
     print("Getting user monthly expenses...")
@@ -116,6 +134,7 @@ def test_get_user_monthly_expenses():
     assert len(result) != 0, "user monthly expenses list is empty."
     print("User monthly expenses retrieved successfully.", result)
 
+
 def test_get_expenses_by_month():
     print("Getting user expenses by month...")
 
@@ -123,6 +142,7 @@ def test_get_expenses_by_month():
     assert result is not None, "user month expenses was not retrieved successfully."
     assert len(result) != 0, "user expenses by month list is empty."
     print("User expenses by month retrieved successfully.", result)
+
 
 test_create_expenses_table()
 test_create_users_table()
