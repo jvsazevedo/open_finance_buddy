@@ -7,7 +7,19 @@ import os
 # Add the parent directory to the path
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-from utils.expenses_db_sqlite import get_user_monthly_income, get_user_monthly_expenses, get_expenses_by_month, add_user_expense
+from utils.expenses_db_sqlite import (
+    get_user_monthly_income,
+    get_user_monthly_expenses,
+    get_expenses_by_month,
+    add_user_expense
+)
+from utils.messages_db_sqlite import (
+    get_recent_conversations,
+    add_message_with_embedding,
+    find_similar_messages_for_user,
+    find_recent_similar_messages,
+    find_similar_messages_by_topic
+)
 
 @tool
 def search_user_monthly_income(user_id: str) -> Dict[str, Any]:

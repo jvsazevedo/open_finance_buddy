@@ -1,48 +1,52 @@
 import sqlite3
-from langchain.vectorstores import SQLiteVSS
-from langchain.embeddings import OpenAIEmbeddings
+import sqlite_vss
+from langchain_community.vectorstores import SQLiteVSS
+from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 
-conn = sqlite3.connect("messages_history.db")
-cursor = conn.cursor()
+sqlite_db = sqlite3.connect("messages_history.db")
+sqlite_db.enable_load_extension(True)
+sqlite_vss.load(sqlite_db)
+cursor = sqlite_db.cursor()
 
 embeddings = OpenAIEmbeddings()
-vectorstore = SQLiteVSS.from_params(
+vectorstore = SQLiteVSS(
+    table="embeddings",
+    connection=sqlite_db,
     embedding=embeddings,
-    db_file="messages_vectors.db",
-    table_name="embeddings",
-    content_column="content",
-    metadata_columns=["message_id", "topic_summary", "user_id"]
+    db_file="messages_history.db",
 )
 
 def create_conversations_table():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS conversations (
         id INTEGER PRIMARY KEY,
-        user_id TEXT,
+        user_id INTEGER,
         role TEXT,
         content TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         topic_summary TEXT
     )
     ''')
-    conn.commit()
+    sqlite_db.commit()
 
 def add_message_with_embedding(user_id: int, role: str, content: str, topic_summary: str):
     cursor.execute(
         "INSERT INTO conversations (user_id, role, content, topic_summary) VALUES (?, ?, ?, ?)", 
-        (user_id, role, content, topic_summary)
+        ([user_id, role, content, topic_summary])
     )
     message_id = cursor.lastrowid
-    conn.commit()
+    sqlite_db.commit()
+
+    document = Document(
+        page_content=content,
+        metadata={"user_id": user_id, "topic_summary": topic_summary}
+    )
+
+    documents = [document]
+    vectorstore.add_documents(documents, ids=[message_id])
     
-    vectorstore.add_documents([
-        Document(
-            page_content=content,
-            metadata={"message_id": message_id, "user_id": user_id, "topic_summary": topic_summary}
-        )
-    ])
-    
+
     return message_id
 
 def get_recent_conversations(user_id, limit=10):
@@ -97,7 +101,7 @@ def find_similar_messages_for_user(query, user_id, limit=5):
         return cursor.fetchall()
     return []
 
-def find_recent_similar_messages(query, user_id, limit=5, time_limit_days=7):
+def find_recent_similar_messages_by_date(query, user_id, limit=5, time_limit_days=7):
     """
     Busca mensagens similares à query entre as conversas recentes de um usuário.
     
@@ -139,7 +143,7 @@ def find_recent_similar_messages(query, user_id, limit=5, time_limit_days=7):
         return cursor.fetchall()
     return []
 
-def find_similar_messages_by_topic(query, topic_keywords, user_id=None, limit=5):
+def find_similar_messages_by_topic(query: str, topic_keywords: list[str], user_id: str = None, limit: int =5):
     """
     Busca mensagens similares à query que contenham determinadas palavras-chave no resumo do tópico.
     
