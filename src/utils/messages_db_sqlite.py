@@ -4,17 +4,22 @@ from langchain_community.vectorstores import SQLiteVSS
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 
+# Create and configure SQLite connection with proper row factory
 sqlite_db = sqlite3.connect("messages_history.db")
-sqlite_db.enable_load_extension(True)
-sqlite_vss.load(sqlite_db)
 cursor = sqlite_db.cursor()
+
+# Create a separate connection for SQLiteVSS with row factory
+vss_connection = sqlite3.connect("messages_history_vec.db")
+vss_connection.enable_load_extension(True)
+vss_connection.row_factory = sqlite3.Row
+sqlite_vss.load(vss_connection)
 
 embeddings = OpenAIEmbeddings()
 vectorstore = SQLiteVSS(
     table="embeddings",
-    connection=sqlite_db,
+    connection=vss_connection,
     embedding=embeddings,
-    db_file="messages_history.db",
+    db_file="messages_history_vec.db",
 )
 
 def create_conversations_table():
@@ -33,21 +38,21 @@ def create_conversations_table():
 def add_message_with_embedding(user_id: int, role: str, content: str, topic_summary: str):
     cursor.execute(
         "INSERT INTO conversations (user_id, role, content, topic_summary) VALUES (?, ?, ?, ?)", 
-        ([user_id, role, content, topic_summary])
+        (user_id, role, content, topic_summary)  # Fixed: removed the extra list brackets
     )
     message_id = cursor.lastrowid
     sqlite_db.commit()
 
     document = Document(
         page_content=content,
-        metadata={"user_id": user_id, "topic_summary": topic_summary}
+        metadata={"user_id": user_id, "topic_summary": topic_summary, "message_id": message_id}
     )
 
     documents = [document]
-    vectorstore.add_documents(documents, ids=[message_id])
+    # Remove the ids parameter and let SQLiteVSS handle the IDs
+    ids = vectorstore.add_documents(documents)
     
-
-    return message_id
+    return ids
 
 def get_recent_conversations(user_id, limit=10):
     """
@@ -90,7 +95,8 @@ def find_similar_messages_for_user(query, user_id, limit=5):
         filter={"user_id": user_id}  # Filtrar por user_id
     )
     
-    message_ids = [doc.metadata["message_id"] for doc in results]
+    # Get message_ids from metadata
+    message_ids = [doc.metadata.get("message_id") for doc in results if "message_id" in doc.metadata]
     
     if message_ids:
         placeholders = ','.join(['?'] * len(message_ids))
@@ -125,7 +131,7 @@ def find_recent_similar_messages_by_date(query, user_id, limit=5, time_limit_day
         filter={"user_id": user_id}
     )
     
-    message_ids = [doc.metadata["message_id"] for doc in results]
+    message_ids = [doc.metadata.get("message_id") for doc in results if "message_id" in doc.metadata]
     
     if message_ids:
         placeholders = ','.join(['?'] * len(message_ids))
@@ -176,7 +182,7 @@ def find_similar_messages_by_topic(query: str, topic_keywords: list[str], user_i
         if len(filtered_results) >= limit:
             break
     
-    message_ids = [doc.metadata["message_id"] for doc in filtered_results[:limit]]
+    message_ids = [doc.metadata.get("message_id") for doc in filtered_results[:limit] if "message_id" in doc.metadata]
     
     if message_ids:
         placeholders = ','.join(['?'] * len(message_ids))
@@ -186,3 +192,8 @@ def find_similar_messages_by_topic(query: str, topic_keywords: list[str], user_i
         )
         return cursor.fetchall()
     return []
+    
+def close_connections():
+    """Close all database connections properly"""
+    sqlite_db.close()
+    vss_connection.close()
