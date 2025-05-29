@@ -6,3 +6,7 @@ Este projeto usa Flake8 para garantir a qualidade do código. Certifique-se de q
 
 ```bash
 flake8 .
+```
+
+## Required packages linux (WSL)
+sudo apt-get install liblapack3 libblas3 libgomp1

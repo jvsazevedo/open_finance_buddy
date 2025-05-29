@@ -15,7 +15,7 @@ from src.utils import (
     add_user_param,
     add_user_expense,
     get_user_monthly_income,
-    get_user_monthly_expenses,
+    get_recent_user_expenses,
     get_expenses_by_month
 )
 
@@ -67,6 +67,8 @@ def test_add_user():
         "password": "test_password"
     })
 
+    print(type(user_id))
+
     import sqlite3
     conn = sqlite3.connect("expenses.db")
     cursor = conn.cursor()
@@ -114,7 +116,7 @@ def test_add_user_expense():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM expenses WHERE id = (?)", [user_expense])
     result = cursor.fetchone()
-    assert result is not None, "user_params data was not inserted successfully."
+    assert result is not None, "expenses data was not inserted successfully."
     print("test user param created successfully.", result)
 
 
@@ -129,7 +131,7 @@ def test_get_user_monthly_income():
 def test_get_user_monthly_expenses():
     print("Getting user monthly expenses...")
 
-    result = get_user_monthly_expenses(1)  # Assuming user_id 1 exists
+    result = get_recent_user_expenses(1)  # Assuming user_id 1 exists
     assert result is not None, "user monthly expenses was not retrieved successfully."
     assert len(result) != 0, "user monthly expenses list is empty."
     print("User monthly expenses retrieved successfully.", result)
@@ -138,7 +140,7 @@ def test_get_user_monthly_expenses():
 def test_get_expenses_by_month():
     print("Getting user expenses by month...")
 
-    result = get_expenses_by_month(1, 5)  # Assuming user_id 1 exists
+    result = get_expenses_by_month(1, 4)  # Assuming user_id 1 exists
     assert result is not None, "user month expenses was not retrieved successfully."
     assert len(result) != 0, "user expenses by month list is empty."
     print("User expenses by month retrieved successfully.", result)

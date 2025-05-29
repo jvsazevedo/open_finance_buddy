@@ -9,7 +9,7 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 from utils.expenses_db_sqlite import (
     get_user_monthly_income,
-    get_user_monthly_expenses,
+    get_recent_user_expenses,
     get_expenses_by_month,
     add_user_expense
 )
@@ -17,33 +17,33 @@ from utils.expenses_db_sqlite import (
 
 
 @tool
-def search_user_monthly_income(user_id: str) -> Dict[str, Any]:
+def search_user_monthly_income(user_id: int) -> float:
     """
     Search for the user's monthly income
     Use this tool to filter the income by month
     Params:
     - user_id: The user id
+    Returns:
+    - The user's monthly income as a float
     """
     income = get_user_monthly_income(user_id)
-    return income
+    return income if income is not None else 0.0
 
 
 @tool
-def search_user_monthly_expenses(user_id: str) -> Dict[str, Any]:
+def search_user_recent_expenses(user_id: int) -> list[Dict[str, Any]]:
     """
     Search for the user's expenses
-    Use this tool to filter the expenses by month
-    You should use this when user asks about expenses, or for making decisions about expenses
-    For cases like if they can buy a new car or how much they can spend
+    Use this tool to find the user's recent expenses not filtered by month
     Params:
     - user_id: The user id
     """
-    expenses = get_user_monthly_expenses(user_id)
+    expenses = get_recent_user_expenses(user_id)
     return expenses
 
 
 @tool
-def search_expense_by_month(user_id: str, month: int) -> Dict[str, Any]:
+def search_expense_by_month(user_id: int, month: int) -> list[Dict[str, Any]]:
     """
     Search for the user's expenses by month
     Use this tool to filter the expenses by month
@@ -56,23 +56,31 @@ def search_expense_by_month(user_id: str, month: int) -> Dict[str, Any]:
 
 
 @tool
-def add_user_expense_in_month(user_id: str, month: int,
-                              expense: Dict[str, Any]) -> Dict[str, Any]:
+def add_user_expense_in_month(user_id: int, expense: Dict[str, Any]) -> Dict[str, Any]:
     """
     Add a new expense for the user
     Use this tool to add a new expense for the user
     Params:
     - user_id: The user id
-    - month: The month to add expense (1-12), default to current month if not provided
-    - expense: The expense to add
+    - expense: The expense to add as a dictionary: 
+        {
+            "user_id": "",             # int
+            "label": "",               # str
+            "value": 0.0,              # float
+            "currency": "",            # str (e.g., "BRL", "USD")
+            "recurrent": 0,            # int (0 ou 1)
+            "installments": 0,         # int
+            "expiring_date": None,     # str (YYYY-MM-DD)
+            "created_at": None         # str (YYYY-MM-DD)
+        }
     """
     # Implement the logic to add the expense to the database
-    add_user_expense(user_id, month, expense)
+    add_user_expense(user_id, expense)
     return {"status": "success", "message": "Expense added successfully"}
 
 
 @tool
-def add_chat_message(user_id: str, message: str) -> Dict[str, Any]:
+def add_chat_message(user_id: str, message: str):
     """
     Add a chat message to the user's conversation history
     Use this tool to add a chat message to the user's conversation history
@@ -86,7 +94,7 @@ def add_chat_message(user_id: str, message: str) -> Dict[str, Any]:
 
 tools = [
     search_user_monthly_income,
-    search_user_monthly_expenses,
+    search_user_recent_expenses,
     search_expense_by_month,
     add_user_expense_in_month
 ]

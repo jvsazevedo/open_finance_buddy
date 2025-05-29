@@ -8,7 +8,7 @@ def create_expenses_table():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS expenses (
         id INTEGER PRIMARY KEY,
-        user_id TEXT,
+        user_id INTEGER,
         label TEXT,
         value REAL,
         currency TEXT,
@@ -48,7 +48,7 @@ def create_user_params_table():
     conn.commit()
 
 
-def get_user_monthly_income(user_id) -> float | None:
+def get_user_monthly_income(user_id: int) -> float | None:
     """
     Fetch the monthly income of a user from the database.
 
@@ -72,9 +72,9 @@ def get_user_monthly_income(user_id) -> float | None:
     return float(result[0]) if result else None
 
 
-def get_user_monthly_expenses(user_id):
+def get_recent_user_expenses(user_id: int) -> list[Dict[str, Any]]:
     """
-    Fetch the monthly expenses of a user from the database.
+    Fetch 50 recent user expenses from the database.
 
     Args:
         user_id (int): The ID of the user.
@@ -92,11 +92,13 @@ def get_user_monthly_expenses(user_id):
         (user_id,)
     )
     result = cursor.fetchall()
-
+    print("Recent user expenses fetched:", result)
+    if not result:
+        return []
     return result
 
 
-def get_expenses_by_month(user_id: str, month: int):
+def get_expenses_by_month(user_id: int, month: int) -> list[Dict[str, Any]]:
     """
     Fetch the expenses of a user for a specific month from the database.
 
@@ -121,13 +123,12 @@ def get_expenses_by_month(user_id: str, month: int):
     return result
 
 
-def add_user_expense(user_id: str, expense: Dict[str, Any]):
+def add_user_expense(user_id: int, expense: Dict[str, Any]):
     """
     Add an expense for a user for a specific month to the database.
 
     Args:
         user_id (str): The ID of the user.
-        month (int): The month for which to add the expense.
         expense (Dict[str, Any]): The expense to add.
 
     Returns:
@@ -160,7 +161,7 @@ def add_user_expense(user_id: str, expense: Dict[str, Any]):
     return cursor.lastrowid
 
 
-def add_user(user: Dict[str, Any]) -> int:
+def add_user(user: Dict[str, Any]):
     """
     Add a user to the database.
 
@@ -182,7 +183,7 @@ def add_user(user: Dict[str, Any]) -> int:
     return cursor.lastrowid
 
 
-def add_user_param(user_id: int, param: Dict[str, Any]) -> int:
+def add_user_param(user_id: int, param: Dict[str, Any]):
     """
     Add a user parameter to the database.
 

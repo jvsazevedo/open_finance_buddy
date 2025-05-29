@@ -160,7 +160,7 @@ def find_recent_similar_messages_by_date(query, user_id, limit=5, time_limit_day
 def find_similar_messages_by_topic(
     query: str,
     topic_keywords: list[str],
-    user_id: str = None,
+    user_id: str | None = None,
     limit: int = 5
 ):
     """

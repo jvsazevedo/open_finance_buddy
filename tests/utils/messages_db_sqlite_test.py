@@ -92,7 +92,7 @@ def test_find_similar_messages_by_topic():
     conversations = find_similar_messages_by_topic(
         query="Test content",
         topic_keywords=["Summary"],
-        user_id=2,
+        user_id="2",
         limit=5
     )
 
