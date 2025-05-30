@@ -47,6 +47,14 @@ def create_user_params_table():
     """)
     conn.commit()
 
+def initialize_database():
+    """
+    Initialize the database by creating the necessary tables.
+    This function should be called once to set up the database schema.
+    """
+    create_expenses_table()
+    create_user_table()
+    create_user_params_table()
 
 def get_user_monthly_income(user_id: int) -> float | None:
     """

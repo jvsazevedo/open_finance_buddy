@@ -1,7 +1,7 @@
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
+from pydantic import SecretStr
 from dotenv import load_dotenv
 import sys
 import os
@@ -11,21 +11,26 @@ sys.path.append(parent_dir)
 from utils.tools import tools
 from utils.schemas import State
 load_dotenv()
-openai_api_key = os.getenv("OPENAI_API_KEY")
+openai_api_key = SecretStr(os.getenv("OPENAI_API_KEY") or "")
 
-system_prompt = SystemMessage(content="""
+system_prompt_template = """
 You are an advanced AI financial assistant.
 Designed to help users understand their finances and make informed decisions.
 Your responses should be tailored to each user's needs and language preferences.
 
 Here's the user's name, if provided:
 <user_name>
-{{messages}}
+{user_name}
 </user_name>
 
+Here's the user's ID:
+<user_id>
+{user_id}
+</user_id>
+                              
 The messages history is:
 <messages_history>
-{{messages}}
+{messages}
 </messages_history>
 
 Follow these guidelines to provide the best possible assistance:
@@ -79,20 +84,40 @@ Before responding to the user, in <analysis> tags:
 Then, provide your answer in a clear, concise manner appropriate for a financial context.
 
 Remember to always prioritize accuracy, clarity, and helpfulness in your responses.
-""")
+"""
 
 
-llm = ChatOpenAI(model='gpt-4.1-mini', temperature=0.3, timeout=None,
-                 max_retries=3, api_key=openai_api_key)
+llm = ChatOpenAI(
+	model='gpt-4.1-mini',
+    temperature=0.3,
+    timeout=None,
+	max_retries=3,
+    api_key=openai_api_key
+)
 
 
 def agent_node(state: State):
     """Agent node in the workflow graph."""
     from langgraph.prebuilt import create_react_agent
+    from langchain_core.prompts import ChatPromptTemplate
+    
+    # Create a dynamic system prompt with user information
+    dynamic_system_prompt = system_prompt_template.format(
+        user_name=state.get("user_name", ""),
+        user_id=state.get("user_id", ""),
+        messages=""  # Will be handled by the agent automatically
+    )
+    
+    # Create a proper prompt template
+    prompt_template = ChatPromptTemplate.from_messages([
+		("system", dynamic_system_prompt),
+		("placeholder", "{messages}")
+    ])
+    
     finance_agent_graph = create_react_agent(
         model=llm,
         tools=tools,
-        prompt=system_prompt,
+        prompt=prompt_template,
     )
     result = finance_agent_graph.invoke(state)
     agent_response = result['messages'][-1]

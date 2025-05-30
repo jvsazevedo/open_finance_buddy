@@ -34,6 +34,14 @@ def create_conversations_table():
     ''')
     sqlite_db.commit()
 
+def initialize_messages_database():
+    """
+    Initialize the messages database by creating the necessary tables.
+    This function should be called once to set up the database schema.
+    """
+    create_conversations_table()
+    # Ensure the vectorstore is initialized
+    vectorstore.create_table_if_not_exists()
 
 def add_message_with_embedding(user_id: int, role: str, content: str, topic_summary: str):
     cursor.execute(
