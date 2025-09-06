@@ -188,7 +188,7 @@ def add_user(user: Dict[str, Any]):
         )
     )
     conn.commit()
-    return cursor.lastrowid
+    return cursor.lastrowid or 0
 
 
 def add_user_param(user_id: int, param: Dict[str, Any]):
@@ -211,4 +211,4 @@ def add_user_param(user_id: int, param: Dict[str, Any]):
         )
     )
     conn.commit()
-    return cursor.lastrowid
+    return cursor.lastrowid or 0

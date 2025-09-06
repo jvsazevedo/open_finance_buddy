@@ -88,12 +88,12 @@ Remember to always prioritize accuracy, clarity, and helpfulness in your respons
 
 
 llm = ChatOpenAI(
-	model='gpt-4.1-mini',
-    temperature=0.3,
-    timeout=None,
-	max_retries=3,
-    api_key=openai_api_key
-)
+   model='gpt-4.1-mini',
+   temperature=0.3,
+   timeout=None,
+   max_retries=3,
+   api_key=openai_api_key
+) #type: ignore
 
 
 def agent_node(state: State):

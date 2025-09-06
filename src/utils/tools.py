@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from langchain_core.tools import tool
 
 import sys
@@ -87,6 +87,20 @@ def add_user_expense_in_month(user_id: int, expense: Dict[str, Any]) -> Dict[str
     # Implement the logic to add the expense to the database
     add_user_expense(user_id, expense)
     return {"status": "success", "message": "Expense added successfully"}
+
+
+@tool
+def add_chat_message(user_id: str, message: str) -> Dict[str, Any]:
+    """
+    Add a chat message to the user's conversation history
+    Use this tool to add a chat message to the user's conversation history
+    Params:
+    - user_id: The user id
+    - message: The message to add
+    """
+    # Implement the logic to add the message to the database or conversation history
+    return {"status": "success", "message": "Message added successfully"}
+
 
 tools = [
     search_user_monthly_income,

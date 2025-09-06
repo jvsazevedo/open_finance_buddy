@@ -1,5 +1,6 @@
 import sqlite3
 import sqlite_vss
+from typing import Optional
 from langchain_community.vectorstores import SQLiteVSS
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
@@ -168,7 +169,7 @@ def find_recent_similar_messages_by_date(query, user_id, limit=5, time_limit_day
 def find_similar_messages_by_topic(
     query: str,
     topic_keywords: list[str],
-    user_id: str | None = None,
+    user_id: Optional[str] = None,
     limit: int = 5
 ):
     """
