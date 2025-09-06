@@ -9,4 +9,5 @@ flake8 .
 ```
 
 ## Required packages linux (WSL)
+
 sudo apt-get install liblapack3 libblas3 libgomp1
